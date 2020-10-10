@@ -1,0 +1,426 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width=3, fig.height=3) 
+```
+
+  
+
+\begin{center}
+\section{Predicting Stock Prices Using Geometric Brownian Motion}
+
+December 13, 2019 
+
+Group 22: Vetrie Senthilkumar (vetries2), Chris Zhu (cjzhu2), Sovin Birla (sbirla2), Peter Krawiec (pwk2), Aaryan Bahl (aaryanb2) 
+
+Peer Review Group 19: Hyunsoo Lee (hyunsoo2) - Group Leader, Ziyang Yu (zyu18), Jiali Chen (jialic2), Fangyi Zhang (fangyiz2), Yu Wu (yuw5) 
+\end{center}
+
+\newpage
+
+# Abstract 
+We used Monte Carlo Simulations to predict stock prices from historical data provided in the R package Quantmod. The methods we used are a MCMC process based on Geometric Brownian Motion (GBM), k-trimmed mean, and the time-weighted functionality. In general, we found that we were able to accurately generate confidence intervals containing the actual stock prices, but the range of our intervals was too large to yield meaningful insights when used in isolation. Therefore, our methods could potentially aid in stock price predictions along with an ensemble of other strategies. 
+
+# Introduction
+For decades, both casual traders and seasoned Wall Street analysts have pondered the movement of stock prices. There have been several methods to simulate the chaos of the market. We are using Monte Carlo methods to tackle this common problem when estimating stock prices. Most of the group is active in the stock market and were fascinated by the potential applications of this project to their own trading strategies. Our goal is to predict the closing prices of stocks after a set time period to minimize risk of loss and maximize profit returns when choosing investment options. 
+
+To do so, we used Geometric Brownian Motion, a type of Markov Chain Monte Carlo process (Group 2). The core idea behind our method is to predict the randomly varying future price of the stock under the assumption that it belongs to a certain distribution. Our method incorporates the long term history of the stock as well as potential random fluctuations. By running several Monte Carlo simulations, we hope to account for a wide range of outcomes defined by a certain level of randomness. 
+
+Alongside this, our incorporation of Monte Carlo Inference (Group 1) comes in the form of generating a number of k-trimmed means and estimating their efficiency through their RMSE in order choose the optimal mean estimate to be used in our calculations. The use of k-trimmed means helped us account for the effects of unrealistic stock price predictions.
+
+In conclusion, we calculate a confidence interval to estimate the price of the stock with a user input number of days. This calculation gives us a metric to assess the potential volatility of the stock after a certain period of days. It serves as an assessment to the extremity of our profits and losses. 
+
+The data we accessed in this project is from the historical data in the R package quantmod, a Quantitative Financial Modeling Framework. We store all the data of relevant stocks from the quantmod R package in the variable stock_data by using the getSymbols function in the quantmod package. All the stocks are listed in the ticker_list variable. For our analysis of this stock_data we calculate the daily returns of each stock in the stock_data. Daily returns of each stock are used in the calculations of the MCMC process, k-trimmed mean and the time-weighted functionality. The stocks we considered for this project are Tesla, Amazon, and Johnson and Johnson. We chose these particular stocks because they all displayed different long term trends: Amazon had steady long term growth, Johnson and Johnson was fairly stable, and Tesla was highly volatile. Graphical evidence is provided in the Appendix under Figures 1-3. 
+
+As a result of our detailed analysis, we exceeded 10 pages. We felt that we should include multiple graphs and tables in our results section to provide support for the conclusions drawn in the discussion section. 
+
+
+# Method 
+
+## Data 
+We accessed historical stock data through an R library called quantmod. Quantmod provided details about the opening, closing, high, and low price of Tesla's stock on a daily basis from June 6th, 2010 to present day.  Quantmod also contains a function that computes the daily returns. We subsetted the daily returns data based on training period dates to obtain the input to the model. Similarly, we subsetted the closing price data based on the test period dates to obtain the actual stock prices to compare our simulations against. 
+
+
+## Model 
+
+#### Applying GBM to Stock Prices
+We used a MCMC process based on Geometric Brownian Motion (GBM) to simulate stock prices. GBM is continuous-time stochastic process often used to predict the movement of time series variables such as financial asset prices. GBM solves the following stochastic differential equation: 
+
+$dS_t = \mu S_t dt + \sigma S_t dB_t$
+
+Solving this equation produces the following formula for GBM:
+
+$S_{t+1} = S_te^{(\mu - \frac{\sigma^2}{2})t + \sigma B_t}$  
+
+For the purposes of our project, $\mu$ represents the mean of the daily returns and $\sigma$ represents the standard deviation of the daily returns. $S_0$ is the most recent closing price of the stock. $B_t$ is a standard normal random variable and $t$ is time period between consecutive simulated stock price values. In our simulation, we assume a day has elapsed between successive draws. Thus, $t = 1$ and $t$ can be omitted entirely from our formula for GBM.
+
+The exponent in the GBM consists of two components: the drift and the shock. The drift is given by $(\mu - \frac{\sigma^2}{2})t$ while the shock is given by 
+$\sigma B_t$. The drift takes into consideration the long term direction of the stock's price while the shock accounts for volatility and randomness. The shock induces randomness into the model through the standard normal random variable $B_t$. Thus, GBM incorporates two seemingly contradictory behaviors observed in stock prices: long term trends and short term price fluctuations. 
+
+It should be mentioned that GBM relies on the following assumptions:
+
+1. Stock prices follow a Markov process which implies that we only need the current price of the stock to predict future prices (This can be seen in the formula for GBM. $S_{t+1}$ is only depedent on $S_t$, not on any previous prices) 
+2. The returns of stocks are normally distributed 
+3. The price levels of stocks are log-normally distributed 
+
+#### Weighted Means and Standard Deviation
+
+One prevalent issue with GBM is that all historical returns of stock are weighted equally, but intuitively we expect the current trend to have a larger impact on the future stock price. Generally speaking, the returns of a stock are better reflected by recent returns than returns that occurred years ago. To reflect this behavior, we wanted to create a weighted version of our original model that places greater importance on recent returns. In essence, this process would be similar to a type of importance sampling. In the new weighted model, we replaced $\mu$ and $\sigma$ with the following:
+
+$\hat\mu = \frac{\sum_{i=1}^Nw_ix_i}{\sum_{i=1}^Nw_i}$
+
+$\hat\sigma = \sqrt{\frac{\sum_{i=1}^Nw_i}{(\sum_{i=1}^Nw_i)^2 - (\sum_{i=1}^Nw_i^2)}\sum_{i=1}^Nw_i(x_i-\mu)^2}$
+
+The vector of weights consists of $w_i = (1 - \alpha)^{N - i}$ where $\alpha$ is a constant. Our simulations performed best when $\alpha$ was set to 0.01. 
+
+#### Monte Carlo Inference : K-trimmed Means and RMSE 
+
+We decided to use K-trimmed means as different estimators of the mean. To determine the optimal mean, we find the trimmed mean with the smallest RMSE. The RMSE gives a quantative representation of the magnitude of deviations from the relevant mean. Therefore, the k-trimmed mean which minimizes the RMSE is used in our further calculations for computing confidence intervals. 
+
+#### Computing Confidence Intervals 
+
+As mentioned previously, one of the assumptions of GBM is that the price levels of the stock are log normally distributed. Therefore, we felt that it would be better idea to construct a standard normal confidence interval using the log of the predicted stock prices instead. To do so, we apply a logarithmic transformation on the predicted stock prices generated by the simulation and compute the corresponding confidence interval. Afterward, we apply an exponential transformation to the upper and lower bound of the confidence interval to obtain a confidence interval for the regular price of the stock. Code describing this process is included in the Appendix under the Code subsection.
+
+
+## Algorithm 
+
+#### GBM Model
+
+Since most of our model was constructed as a single function, we decided to provide code to facilitate an understanding of our implementation.
+
+```{r, message=FALSE}
+runMCSims = function(num_sim, total_days, stock_data, alpha) {
+  returns = dailyReturn(stock_data)
+ 
+  # Check whether to use weighted or unweighted parameters 
+  if (alpha > 0) {
+    weighted_params = computeWeightedParams(alpha, returns)
+    mu = weighted_params[1]
+    sigma = weighted_params[2]
+  } else {
+    mu = mean(returns)
+    sigma = sd(returns)
+  }
+  
+  sim_mat = matrix(0, nrow = num_sim, ncol = total_days + 1)
+  sim_mat[, 1] = tail(Cl(stock_data), 1)[[1]] # All sims start off with most recent closing price
+  
+  drift = (mu - sigma^2 / 2)
+
+  for (k in 1:num_sim) {
+    for (i in 1:total_days) {
+      shock = sigma * rnorm(1)
+      sim_mat[k, i + 1] = sim_mat[k, i] * exp(drift + shock)
+    }
+  } 
+  
+  return (sim_mat)
+} 
+```
+
+The function representing our model requires four inputs: the number of simulations that should be run (num_sim), the number of days each simulation should try to predict stock prices for (total_days), the ticker symbol of the stock (ticker), and the weight (alpha). When alpha is 0, the regular, unweighted model is used. 
+
+1. First use the relevant stock data to compute the daily returns 
+
+2. Determine whether to use weighted or unweighted parameters. If weighted parameters are required, calculate the correct parameters using the helper function computeWeightedParams(). This helper function computes the formulas discussed in the Weighted Mean and Standard Deviation section and is included in the Appendix under the Code subsection. Otherwise, set mu and sigma as the mean and standard deviation of the historical daily returns of the stock. 
+
+3. We create an empty matrix (sim_mat) to store the results of our simulations. Each row in the matrix represents a single simulation and contains the generated stock prices. The rows can also be thought of as GBM Markov Chains. Each row has (total_days + 1) entries, or an entry for each of the days we want to simulate the future price. The very first, additional entry is set to the most recent closing price. We include this information because our Markov Chain needs a starting point to proceed from. This entry should be omitted for all analyses. 
+
+4. The drift is computed using mu and sigma. Note that that drift is a constant quantity and is independent of where we are in the GBM Markov Chain. Thus, drift can be calculated prior to any sort of iterative method used to generate the chain.
+
+5. The outer loop iterates through the number of simulations that need to be run. The inner loop iterates through the number of days we are simulating prices for. For each iteration of the inner loop, the stock price at the next day is calculated using the current stock price, the shock, and the drift. The function rnorm() is used to generate a standard normal random variable that adds an element of randomness to the shock. The next day's stock price is then stored into the matrix. Thus, we are filling in sim_mat row by row.   
+
+6. The first column of sim_mat containing init_price is removed and the matrix is returned as output 
+
+#### Calculating K-trimmed Means and RMSE 
+
+We also created a function to compute the optimal mean using k-trimmed means whose effectiveness is analyzed with RMSE
+
+```{r}
+optimal_mean = function(sim_mat){
+      final_prices = sim_mat[, nrow(sim_mat) + 1]
+      
+      rmse = numeric(30)
+      new_mean = 0
+      cur_rmse = Inf
+      
+      for(i in 1:30){
+         x = sort(final_prices)
+         max = length(final_prices)
+         x_t = x[(i+1):(max-i)]
+         x_bar = mean(x_t)
+         rmse = sqrt(mean((x_bar - x)^2))
+         if(rmse < cur_rmse){
+           new_mean = x_t
+           cur_rmse = rmse
+         }
+      }
+      return(new_mean)
+}
+```
+
+The function accepts one parameter which is the matrix containing the results of the simulations. 
+
+1. We access the last generated stock price from each simulation and store this data into the vector final_prices
+
+2. We define structures and constants needed to compute RMSE and optimal mean during iteration 
+
+3. We iterate through possible trim values ranging from k = 0...30 and for each trim value we compute the trimmed mean and resulting RMSE. If we have a lower RMSE value than before, we replace our optimal mean with the current trimmed mean. 
+
+# Results and Code
+```{r, message=FALSE}
+library(quantmod)
+library(ggplot2)
+library(rbenchmark)
+library(magrittr)
+```
+
+```{r, include = FALSE, message=FALSE}
+# Confidence interval code 
+ci = function(sim_mat, conf_level) {
+  final_prices = sim_mat[, ncol(sim_mat)]
+  
+  mu = mean(log(final_prices))
+  sigma = sd(log(final_prices))
+  
+  Z = qnorm((1 - conf_level)/2) 
+  
+  ln_final_price_CI = c(mu + Z*sigma, mu - Z*sigma)
+  final_price_CI = exp(ln_final_price_CI)
+  
+  return (final_price_CI)
+}
+```
+
+
+```{r, include = FALSE, message=FALSE}
+# Function to compute weighted parameters 
+computeWeightedParams = function(alpha, returns) {
+  weights = numeric(length(returns))
+  
+  for (i in 1:length(weights)) {
+    weights[i] = (1 + alpha)^i
+  }
+  
+  diff = (returns - mean(returns))^2
+  
+  mu = sum(weights * returns) / sum(weights)
+  sigma = sqrt((sum(weights) * sum(diff * weights)) / (sum(weights)^2 - sum(weights^2)))
+  
+  return (c(mu, sigma))
+}
+
+runMCSims = function(num_sim, total_days, stock_data, alpha) {
+  returns = dailyReturn(stock_data)
+ 
+  # Check whether to use weighted or unweighted parameters 
+  if (alpha > 0) {
+    weighted_params = computeWeightedParams(alpha, returns)
+    mu = weighted_params[1]
+    sigma = weighted_params[2]
+  } else {
+    mu = mean(returns)
+    sigma = sd(returns)
+  }
+  
+  sim_mat = matrix(0, nrow = num_sim, ncol = total_days + 1)
+  sim_mat[, 1] = tail(Cl(stock_data), 1)[[1]] # All sims start off with most recent closing price
+  
+  drift = (mu - sigma^2 / 2)
+
+  for (k in 1:num_sim) {
+    for (i in 1:total_days) {
+      shock = sigma * rnorm(1)
+      sim_mat[k, i + 1] = sim_mat[k, i] * exp(drift + shock)
+    }
+  } 
+  
+  return (sim_mat)
+}
+```
+
+
+```{r, include=FALSE, message=FALSE}
+summarizeSimResults = function(ticker) {
+  knitr::opts_chunk$set(fig.width=3, fig.height=3)  
+
+  periods = c()
+  closing_prices = c()
+  
+  lb = c()
+  ub = c()
+  contains = c()
+  
+  lb_w = c()
+  ub_w = c()
+  contains_w = c()
+  
+  # Load stock data
+  data = getSymbols(ticker, auto.assign = FALSE)
+  returns = dailyReturn(data)
+  
+  # Dates defining month, quarter, year, and three years
+  PERIOD_DATA = list(list('Month', '2019-10-31', '/2019-10-31', '2019-11-01/'), list('Quarter', '2019-09-30', "/2019-09-30", '2019-10-01/'), list('Year', '2018-12-31', '/2018-12-31', '2019-01-01/'), list('3 Years', '2015-12-31', '/2015-12-31', '2016-01-01/'))
+  
+  for (i in 1:length(PERIOD_DATA)) {
+    cur_period = as.character(PERIOD_DATA[[i]][1])
+    start_date = as.character(PERIOD_DATA[[i]][2])
+    start_date_slash = as.character(PERIOD_DATA[[i]][3])
+    end_date = as.character(PERIOD_DATA[[i]][4])
+    
+    closing_price = Cl(data)[start_date][[1]]
+    train_returns = returns[start_date_slash]
+    test_prices = Cl(data)[end_date]
+    actual_close = test_prices[length(test_prices)]
+    
+    # Run unweighted and weighted simulations
+    sim_mat = runMCSims(25, length(test_prices), data, 0)
+    sim_mat_w = runMCSims(25, length(test_prices), data, .01)
+    
+    # Compute confidence intervals using results of simulations
+    conf_int = ci(sim_mat, .9)
+    price_in_ci = actual_close >= conf_int[1] && actual_close <= conf_int[2]
+    
+    conf_int_w = ci(sim_mat_w, .9)
+    price_in_ci_w = actual_close >= conf_int_w[1] && actual_close <= conf_int_w[2]
+    
+    periods = c(periods, cur_period)
+    closing_prices = c(closing_prices, actual_close)
+    
+    # Check if confidence intervals contain true stock price 
+    lb = c(lb, conf_int[1])
+    ub = c(ub, conf_int[2])
+    contains = c(contains, price_in_ci)
+    
+    lb_w = c(lb_w, conf_int_w[1])
+    ub_w = c(ub_w, conf_int_w[2])
+    contains_w = c(contains_w, price_in_ci_w)
+    
+    # Creating y limits for graphing purposes 
+    ylim_nonweighted = c(min(test_prices, sim_mat), max(test_prices, sim_mat))
+    ylim_weighted = c(min(test_prices, sim_mat_w), max(test_prices, sim_mat_w))
+                         
+    # Plot stock prices generated using nonweighted model
+    matplot(t(sim_mat), type = 'l', main = paste0(ticker, ' Share Prices (Nonweighted)'), ylab = 'Price ($)', xlab = 'Day', ylim = ylim_nonweighted, cex.main=.75)
+    matlines(as.numeric(test_prices), lwd = 3)
+    
+    # Plot stock prices generated using weighted model
+    matplot(t(sim_mat_w), type = 'l', main = paste0(ticker, ' Share Prices (Weighted)'), ylab = 'Price ($)', xlab = 'Day', ylim = ylim_weighted, cex.main=.75)
+    matlines(as.numeric(test_prices), lwd = 3)
+  }
+  
+  # Summarize confidence intervals in a table 
+  data_summary = data.frame(Period = periods, closing_prices, lb, ub, contains)
+  data_summary_w = data.frame(Period = periods, closing_prices, lb_w, ub_w, contains_w)
+  colnames(data_summary) = c('Period', 'Closing Price', 'Lower Bound', 'Upper Bound', 'CI Contains')
+  colnames(data_summary_w) = c('Period', 'Closing Price', 'Lower Bound', 'Upper Bound', 'CI Contains')
+  
+  print(data_summary)
+  print(data_summary_w)
+}
+```
+
+## TSLA
+```{r, message=FALSE}
+summarizeSimResults('TSLA')
+```
+
+## AMZN
+```{r, message=FALSE}
+summarizeSimResults('AMZN')
+```
+
+## JNJ
+```{r, message=FALSE}
+summarizeSimResults('JNJ')
+```
+
+
+\newpage
+
+# Discussion
+
+In this section, we investigated the accuracy of the model when applied to several stocks' historical data across different time periods. We compared the predictions to the actual stock price and found that our prediction methods are accurate but are limited in precision.
+
+For Tesla stock predictions, all of the time-unweighted prediction confidence intervals contained the true value of the stock. Upon investigation of the 90% confidence interval generated, all four end-of-period prediction intervals have a considerably high range. So, although they all contain the true value, their range is too high as to provide any real utility in prediction. The Tesla time-weighted predictions stack similarly, all of the intervals generated feature the true value, except for the three year prediction, but again the intervals are too large to provide real utility. It is also interesting that the three year prediction fails in the time-weighted case while succeeding in the unweighted one. This could be due to a number of things, one possibility is that the weight value chosen for the time-weighting was too far from the optimal value. It is also possible that the assumed benefit of time-weighting is not reflected in reality. It is worth noting that Tesla stock is notorious for its variability, this could have contributed largely to the width of the intervals generated.   
+
+For Amazon stock predictions, both the time-weighted and unweighted prediction confidence intervals contained the true value for all four periods. However, just as in the Tesla stock prediction inspection of the interval generated shows a large range of contained values. Amazon is considerably less variable that Tesla stock, yet the large range persists, this seems to lend itself to the idea that using historical data is simply not sufficient for prediction. Nevertheless, the fact that all intervals contain the true value still shows some promise to this methodology. 
+
+For Johnson and Johnson stock predictions, all generated intervals contained the true value except for the time-weighted three-year prediction, similar to our results regarding Tesla stock. This further lends to the idea that time-weighted predictions do more poorly. Noteworthy with the Johnson and Johnson predictions is that the intervals are smaller in magnitude and relative to overall price, this stock is more stable than the other two, so with that in account, this modeling shows more promise in stocks which feature similar trends, some utility may be found in these predictions.  
+
+Overall, it seems that the intervals are generally too large to be useful, however, in some cases they may be. Furthermore, the time-weighted predictions seemed to be worse. This may be due to a number of things, but one plausible explanation is that the current weights over emphasize recent trends that then dominate the direction of the Markov Chain generated by the model. Further investigation of the weights used is recommended. 
+
+One fairly obvious limitation in our ability to predict future stock price is that the sole source of information for our modeling is historical prices. The pricing of stocks can have fairly complicated motivations and mechanics in reality, so simply using historical data is unlikely to be able to predict very closely to the actual price. Confidence intervals are used to account for this. 
+
+Regarding future modeling based on the methods used in this analysis, we recommend incorporating other historical metrics to aid in future prediction, such as prices of other correlated financial assets. It seems unlikely that solely using this modeling can yield useful results, but it is possible that when used in conjunction with other methods it can prove to be beneficial to prediction. Further investigation is recommended. 
+
+
+# Appendix 
+
+### Citations
+http://www.diva-portal.se/smash/get/diva2:1214365/FULLTEXT01.pdf
+Monte Carlo Simulations of Stock Price: Modelling the probability of future stock returns
+By: TOBIAS BRODD & ADRIAN DJERF
+June 6, 2018
+
+https://www.investopedia.com/articles/07/montecarlo.asp
+Investopedia article: How to use Monte Carlo Simulatin with GBM 
+By: Bryce David Harper
+Oct 28,2019
+
+### Figures
+```{r, echo=FALSE}
+tickers = c('TSLA', 'AMZN', 'JNJ')
+end_date = '2015-11-01/'
+
+for (i in 1:length(tickers)) {
+  data = getSymbols(tickers[i], auto.assign = FALSE)
+  test_prices = Cl(data)["2016/"]
+  
+  matplot(as.numeric(test_prices), type='l', xlab = 'Day', ylab = 'Price of Share', main = paste(tickers[i], " Share Prices (Figure ", i, ")"), cex.main=.75)
+}
+
+
+```
+
+### Code 
+
+Function to compute confidence interval for future stock prices
+```{r, message=FALSE}
+ci = function(sim_mat, conf_level) {
+  final_prices = sim_mat[, ncol(sim_mat)]
+  
+  mu = mean(log(final_prices))
+  sigma = sd(log(final_prices))
+  
+  Z = qnorm((1 - conf_level)/2) 
+  
+  ln_final_price_CI = c(mu + Z*sigma, mu - Z*sigma)
+  final_price_CI = exp(ln_final_price_CI)
+  
+  return (final_price_CI)
+}
+```
+
+Function to compute parameters for time-weighted model 
+```{r, message=FALSE}
+computeWeightedParams = function(alpha, returns) {
+  weights = numeric(length(returns))
+  
+  for (i in 1:length(weights)) {
+    weights[i] = (1 + alpha)^i
+  }
+  
+  diff = (returns - mean(returns))^2
+  
+  mu = sum(weights * returns) / sum(weights)
+  sigma = sqrt((sum(weights) * sum(diff * weights)) / (sum(weights)^2 - sum(weights^2)))
+  
+  return (c(mu, sigma))
+}
+```
