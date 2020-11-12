@@ -1,0 +1,17 @@
+.user-entries{
+  margin-top: 10px;
+}
+
+.drugentry{
+  background-color: lightblue;
+  border-radius: 5px;
+  margin: 3px;
+  padding: 5px 10px 5px 10px;
+}
+
+.procentry{
+  background-color: lightpink;
+  border-radius: 5px;
+  margin: 3px;
+  padding: 5px 10px 5px 10px;
+}

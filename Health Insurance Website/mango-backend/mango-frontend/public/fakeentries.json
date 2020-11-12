@@ -1,0 +1,24 @@
+{
+  "user" : "greg",
+  "status" : "success",
+  "entries": {
+    "drugs" : [
+      {
+        "name": "drug1",
+        "cost" : 2,
+        "hasInsurance": false,
+        "zipcode": 78092,
+        "id": 1234
+      }
+    ],
+    "procedures" : [
+      {
+        "name": "drug1",
+        "cost" : 2,
+        "hasInsurance": false,
+        "zipcode": 23987,
+        "id": 1234
+      }
+    ]
+  }
+}

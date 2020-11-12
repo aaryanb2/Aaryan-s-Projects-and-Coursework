@@ -1,0 +1,11 @@
+{
+  "treatments" : {
+    "drugs" : [
+      {"drug1" : {"info" : 11}},
+      {"drug2" : {"info" : 23}}
+    ],
+    "procedures" : [
+      {"procedure1" : {"info" : 400}}
+    ]
+  }
+}
