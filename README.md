@@ -1,6 +1,6 @@
 # Aaryan's Projects and Coursework
 
-This repository contains select machine learning and robotics projects completed as part of my graduate coursework and personal research.
+This repository contains select machine learning and robotics projects. These were an extension of my graduate coursework and personal research.
 
 ## Projects
 
