@@ -5,7 +5,7 @@ This repository contains select machine learning and robotics projects. These we
 ## Main Projects
 
 - [📈 Stock Portfolio Optimizer](./Stock%20Portfolio%20Optimizer): ML pipeline using BagLearner, Regression Trees, and Q-Learning to optimize portfolio risk-adjusted returns.
-- [🤖 Robot Navigation with GraphSLAM](./Robot-Navigation-GraphSLAM): Implements GraphSLAM, A* search, and PID control for autonomous mapping and planning.
+- [🤖 Robot Navigation with GraphSLAM](./Robot-Navigation-GraphSLAM) (in-progress, will be uploaded soon): Implements GraphSLAM, A* search, and PID control for autonomous mapping and planning.
 
 ## Other Projects
 - Classifier using TF-IDF Vectorizer for logistic regression.
