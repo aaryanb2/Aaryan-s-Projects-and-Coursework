@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.dates as mdates
-import StrategyLearner as sl
+import Ensemble_Learner as sl
 import datetime as dt
 
 
