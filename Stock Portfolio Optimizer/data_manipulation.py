@@ -12,53 +12,12 @@ from util import get_data, plot_data
 import scipy.optimize as opt
 import matplotlib.dates as mdates
 import yfinance as yf
-
-def author():
-    """
-    :return: The GT username of the student
-    :rtype: str
-    """
-    userid = "abahl32"
-    return userid
-
-
-def study_group():
-    """
-    return study group members
-    """
-    return "abahl32"
-
-
-# This is the function that will be tested by the autograder  		  	   		 	   		  		  		    	 		 		   		 		  
-# The student must update this code to properly implement the functionality  		  	   		 	   		  		  		    	 		 		   		 		  
+ 	   		 	   		  		  		    	 		 		   		 		  
 def optimize_portfolio(  		  	   		 	   		  		  		    	 		 		   		 		  
     prices_all,
     syms,
     gen_plot=False,  		  	   		 	   		  		  		    	 		 		   		 		  
 ):  		  	   		 	   		  		  		    	 		 		   		 		  
-    """  		  	   		 	   		  		  		    	 		 		   		 		  
-    This function should find the optimal allocations for a given set of stocks. You should optimize for maximum Sharpe  		  	   		 	   		  		  		    	 		 		   		 		  
-    Ratio. The function should accept as input a list of symbols as well as start and end dates and return a list of  		  	   		 	   		  		  		    	 		 		   		 		  
-    floats (as a one-dimensional numpy array) that represents the allocations to each of the equities. You can take  		  	   		 	   		  		  		    	 		 		   		 		  
-    advantage of routines developed in the optional assess portfolio project to compute daily portfolio value and  		  	   		 	   		  		  		    	 		 		   		 		  
-    statistics.  		  	   		 	   		  		  		    	 		 		   		 		  
-  		  	   		 	   		  		  		    	 		 		   		 		  
-    :param sd: A datetime object that represents the start date, defaults to 1/1/2008  		  	   		 	   		  		  		    	 		 		   		 		  
-    :type sd: datetime  		  	   		 	   		  		  		    	 		 		   		 		  
-    :param ed: A datetime object that represents the end date, defaults to 1/1/2009  		  	   		 	   		  		  		    	 		 		   		 		  
-    :type ed: datetime  		  	   		 	   		  		  		    	 		 		   		 		  
-    :param syms: A list of symbols that make up the portfolio (note that your code should support any  		  	   		 	   		  		  		    	 		 		   		 		  
-        symbol in the data directory)  		  	   		 	   		  		  		    	 		 		   		 		  
-    :type syms: list  		  	   		 	   		  		  		    	 		 		   		 		  
-    :param gen_plot: If True, optionally create a plot named plot.png. The autograder will always call your  		  	   		 	   		  		  		    	 		 		   		 		  
-        code with gen_plot = False.  		  	   		 	   		  		  		    	 		 		   		 		  
-    :type gen_plot: bool  		  	   		 	   		  		  		    	 		 		   		 		  
-    :return: A tuple containing the portfolio allocations, cumulative return, average daily returns,  		  	   		 	   		  		  		    	 		 		   		 		  
-        standard deviation of daily returns, and Sharpe ratio  		  	   		 	   		  		  		    	 		 		   		 		  
-    :rtype: tuple  		  	   		 	   		  		  		    	 		 		   		 		  
-    """  		  	   		 	   		  		  		    	 		 		   		 		  
-
-
     # clean the data
     prices_all.fillna(method="ffill", inplace=True)
     prices_all.fillna(method="bfill", inplace=True)
@@ -79,7 +38,7 @@ def optimize_portfolio(
     result_sort = opt.minimize(neg_sortino_ratio, guess, args = (prices, ), method= 'SLSQP', bounds = bounds, constraints = cons)
     result_sharpe = opt.minimize(neg_sharpe_ratio, guess, args=(prices,), method='SLSQP', bounds=bounds,
                                constraints=cons)
-    # note that the values here ARE NOT meant to be correct for a test case  		  	   		 	   		  		  		    	 		 		   		 		  
+		  	   		 	   		  		  		    	 		 		   		 		  
     allocs = result_sort.x
 
     # Get daily portfolio value
@@ -183,10 +142,6 @@ def constrain(x):
     return np.sum(np.abs(x))
 
 def test_code():  		  	   		 	   		  		  		    	 		 		   		 		  
-    """  		  	   		 	   		  		  		    	 		 		   		 		  
-    This function WILL NOT be called by the auto grader.  		  	   		 	   		  		  		    	 		 		   		 		  
-    """
-
     syms = ["GOOG", "AAPL", "GLD", "XOM", "SPY"]
     # df = yf.download(tickers=syms, period='1y')
     # df = df["Adj Close"]
@@ -210,7 +165,5 @@ def test_code():
     # print(f"Cumulative Return: {cr}")
   		  	   		 	   		  		  		    	 		 		   		 		  
   		  	   		 	   		  		  		    	 		 		   		 		  
-if __name__ == "__main__":  		  	   		 	   		  		  		    	 		 		   		 		  
-    # This code WILL NOT be called by the auto grader  		  	   		 	   		  		  		    	 		 		   		 		  
-    # Do not assume that it will be called  		  	   		 	   		  		  		    	 		 		   		 		  
+if __name__ == "__main__":  		  	   		 	   		  		  		    	 		 		   		 		  		  	   		 	   		  		  		    	 		 		   		 		  
     test_code()  		  	   		 	   		  		  		    	 		 		   		 		  
