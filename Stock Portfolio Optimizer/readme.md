@@ -26,7 +26,7 @@ This project builds a machine learning-based trading strategy that selects optim
    - Results are saved in `p3_results.txt`
 
    ```bash
-   python optimization.py
+   python portfolio_optimizer.py
 3. **ML Strategy Performance (Single Stock)**
 
 	-   Run `prediction_model_runner.py` with one stock symbol to evaluate an ML-based strategy
