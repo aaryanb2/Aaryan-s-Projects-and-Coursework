@@ -17,32 +17,11 @@ import matplotlib.dates as mdates
 
 
 def optimize_portfolio(  		  	   		 	   		  		  		    	 		 		   		 		  
-    sd=dt.datetime(2008, 1, 1),  		  	   		 	   		  		  		    	 		 		   		 		  
-    ed=dt.datetime(2009, 1, 1),  		  	   		 	   		  		  		    	 		 		   		 		  
-    syms=["GOOG", "AAPL", "GLD", "XOM"],  		  	   		 	   		  		  		    	 		 		   		 		  
+    sd,  		  	   		 	   		  		  		    	 		 		   		 		  
+    ed,  		  	   		 	   		  		  		    	 		 		   		 		  
+    syms,  		  	   		 	   		  		  		    	 		 		   		 		  
     gen_plot=False,  		  	   		 	   		  		  		    	 		 		   		 		  
-):  		  	   		 	   		  		  		    	 		 		   		 		  
-    """  		  	   		 	   		  		  		    	 		 		   		 		  
-    This function should find the optimal allocations for a given set of stocks. You should optimize for maximum Sharpe  		  	   		 	   		  		  		    	 		 		   		 		  
-    Ratio. The function should accept as input a list of symbols as well as start and end dates and return a list of  		  	   		 	   		  		  		    	 		 		   		 		  
-    floats (as a one-dimensional numpy array) that represents the allocations to each of the equities. You can take  		  	   		 	   		  		  		    	 		 		   		 		  
-    advantage of routines developed in the optional assess portfolio project to compute daily portfolio value and  		  	   		 	   		  		  		    	 		 		   		 		  
-    statistics.  		  	   		 	   		  		  		    	 		 		   		 		  
-  		  	   		 	   		  		  		    	 		 		   		 		  
-    :param sd: A datetime object that represents the start date, defaults to 1/1/2008  		  	   		 	   		  		  		    	 		 		   		 		  
-    :type sd: datetime  		  	   		 	   		  		  		    	 		 		   		 		  
-    :param ed: A datetime object that represents the end date, defaults to 1/1/2009  		  	   		 	   		  		  		    	 		 		   		 		  
-    :type ed: datetime  		  	   		 	   		  		  		    	 		 		   		 		  
-    :param syms: A list of symbols that make up the portfolio (note that your code should support any  		  	   		 	   		  		  		    	 		 		   		 		  
-        symbol in the data directory)  		  	   		 	   		  		  		    	 		 		   		 		  
-    :type syms: list  		  	   		 	   		  		  		    	 		 		   		 		  
-    :param gen_plot: If True, optionally create a plot named plot.png. The autograder will always call your  		  	   		 	   		  		  		    	 		 		   		 		  
-        code with gen_plot = False.  		  	   		 	   		  		  		    	 		 		   		 		  
-    :type gen_plot: bool  		  	   		 	   		  		  		    	 		 		   		 		  
-    :return: A tuple containing the portfolio allocations, cumulative return, average daily returns,  		  	   		 	   		  		  		    	 		 		   		 		  
-        standard deviation of daily returns, and Sharpe ratio  		  	   		 	   		  		  		    	 		 		   		 		  
-    :rtype: tuple  		  	   		 	   		  		  		    	 		 		   		 		  
-    """  		  	   		 	   		  		  		    	 		 		   		 		  
+):  		  	   		 	   		  		  		    	 		 		   		 		    	   		 	   		  		  		    	 		 		   		 		  	  	   		 	   		  		  		    	 		 		   		 		  
   		  	   		 	   		  		  		    	 		 		   		 		  
     # Read in adjusted closing prices for given symbols, date range  		  	   		 	   		  		  		    	 		 		   		 		  
     dates = pd.date_range(sd, ed)  		  	   		 	   		  		  		    	 		 		   		 		  
@@ -66,8 +45,7 @@ def optimize_portfolio(
     bounds = ((0.0, 1.0),) * len(syms)
     cons = {'type': 'eq', 'fun': lambda x: 1-sum(abs(x))}
     result = opt.minimize(neg_sharpe_ratio, guess, args = (prices, ), method= 'SLSQP', bounds = bounds, constraints = cons)
-
-    # note that the values here ARE NOT meant to be correct for a test case  		  	   		 	   		  		  		    	 		 		   		 		  
+  	   		 	   		  		  		    	 		 		   		 		  
     allocs = result.x
 
     # Get daily portfolio value
@@ -114,7 +92,7 @@ def neg_sharpe_ratio(alloc, data):
 
 def test_code():
   		  	   		 	   		  		  		    	 		 		   		 		  
-    # Call optimize function to save chart for parameters given in assignment instructions
+    # Call optimize function to save chart
     syms = ['IBM', 'X', 'GLD', 'JPM']
     allocations, cr, adr, sddr, sr = optimize_portfolio(sd=dt.datetime(2008,6,1),
                                                         ed=dt.datetime(2009,6,1),
@@ -128,7 +106,5 @@ def test_code():
         print(f"Cumulative Return: {cr}", file=text_file)
   		  	   		 	   		  		  		    	 		 		   		 		  
   		  	   		 	   		  		  		    	 		 		   		 		  
-if __name__ == "__main__":  		  	   		 	   		  		  		    	 		 		   		 		  
-    # This code WILL NOT be called by the auto grader  		  	   		 	   		  		  		    	 		 		   		 		  
-    # Do not assume that it will be called  		  	   		 	   		  		  		    	 		 		   		 		  
+if __name__ == "__main__":  		  	   		 	   		  		  		    	 		 		   		 		    	   		 	   		  		  		    	 		 		   		 		  
     test_code()  		  	   		 	   		  		  		    	 		 		   		 		  
