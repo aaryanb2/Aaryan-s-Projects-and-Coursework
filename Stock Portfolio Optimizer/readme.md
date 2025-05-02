@@ -21,7 +21,7 @@ This project builds a machine learning-based trading strategy that selects optim
 1. **Clone this repository**
 
 2. **Portfolio Optimization (Multi-Stock Allocation)**
-   - Run `optimization.py` and input desired stock symbols
+   - Run `portfolio_optimizer.py` and input desired stock symbols
    - This script calculates optimal allocations based on Sharpe and Sortino Ratios
    - Results are saved in `p3_results.txt`
 
