@@ -35,26 +35,14 @@ class StrategyLearner(object):
         self.portfolio_value = None
         self.num_trades = None
 
-    # this method should create a QLearner, and train it for trading
+    # this method creates a QLearner, and train it for trading
     def add_evidence(  		  	   		 	   		  		  		    	 		 		   		 		  
         self,  		  	   		 	   		  		  		    	 		 		   		 		  
         symbol="IBM",  		  	   		 	   		  		  		    	 		 		   		 		  
         sd=dt.datetime(2008, 1, 1),  		  	   		 	   		  		  		    	 		 		   		 		  
         ed=dt.datetime(2009, 1, 1),  		  	   		 	   		  		  		    	 		 		   		 		  
         sv=10000,  		  	   		 	   		  		  		    	 		 		   		 		  
-    ):
-        """  		  	   		 	   		  		  		    	 		 		   		 		  
-        Trains your learner over a given time frame.
-  		  	   		 	   		  		  		    	 		 		   		 		  
-        :param symbol: The stock symbol to train on  		  	   		 	   		  		  		    	 		 		   		 		  
-        :type symbol: str  		  	   		 	   		  		  		    	 		 		   		 		  
-        :param sd: A datetime object that represents the start date, defaults to 1/1/2008  		  	   		 	   		  		  		    	 		 		   		 		  
-        :type sd: datetime  		  	   		 	   		  		  		    	 		 		   		 		  
-        :param ed: A datetime object that represents the end date, defaults to 1/1/2009  		  	   		 	   		  		  		    	 		 		   		 		  
-        :type ed: datetime  		  	   		 	   		  		  		    	 		 		   		 		  
-        :param sv: The starting value of the portfolio  		  	   		 	   		  		  		    	 		 		   		 		  
-        :type sv: int  		  	   		 	   		  		  		    	 		 		   		 		  
-        """  		  	   		 	   		  		  		    	 		 		   		 		  
+    ):	 	   		  		  		    	 		 		   		 		  
   		  	   		 	   		  		  		    	 		 		   		 		  
         # add your code to do learning here
         new_sd = sd - dt.timedelta(days=5)
@@ -137,21 +125,7 @@ class StrategyLearner(object):
         figa = 1
     ):  		  	   		 	   		  		  		    	 		 		   		 		  
         """  		  	   		 	   		  		  		    	 		 		   		 		  
-        Tests your learner using data outside of the training data  		  	   		 	   		  		  		    	 		 		   		 		  
-  		  	   		 	   		  		  		    	 		 		   		 		  
-        :param symbol: The stock symbol that you trained on on  		  	   		 	   		  		  		    	 		 		   		 		  
-        :type symbol: str  		  	   		 	   		  		  		    	 		 		   		 		  
-        :param sd: A datetime object that represents the start date, defaults to 1/1/2008  		  	   		 	   		  		  		    	 		 		   		 		  
-        :type sd: datetime  		  	   		 	   		  		  		    	 		 		   		 		  
-        :param ed: A datetime object that represents the end date, defaults to 1/1/2009  		  	   		 	   		  		  		    	 		 		   		 		  
-        :type ed: datetime  		  	   		 	   		  		  		    	 		 		   		 		  
-        :param sv: The starting value of the portfolio  		  	   		 	   		  		  		    	 		 		   		 		  
-        :type sv: int  		  	   		 	   		  		  		    	 		 		   		 		  
-        :return: A DataFrame with values representing trades for each day. Legal values are +1000.0 indicating  		  	   		 	   		  		  		    	 		 		   		 		  
-            a BUY of 1000 shares, -1000.0 indicating a SELL of 1000 shares, and 0.0 indicating NOTHING.  		  	   		 	   		  		  		    	 		 		   		 		  
-            Values of +2000 and -2000 for trades are also legal when switching from long to short or short to  		  	   		 	   		  		  		    	 		 		   		 		  
-            long so long as net holdings are constrained to -1000, 0, and 1000.  		  	   		 	   		  		  		    	 		 		   		 		  
-        :rtype: pandas.DataFrame  		  	   		 	   		  		  		    	 		 		   		 		  
+        Tests your learner using data outside of the training data  		  	   		 	   		  		  		    	 		 		   		 		    	   		 	   		  		  		    	 		 		   		 		  
         """
         new_sd = sd - dt.timedelta(days=5)
         indic_data = ut.get_data([symbol], dates=pd.date_range(new_sd, ed))
