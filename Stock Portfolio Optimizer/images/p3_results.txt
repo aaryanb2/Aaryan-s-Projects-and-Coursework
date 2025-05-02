@@ -1,0 +1,6 @@
+Stocks:['IBM', 'X', 'GLD', 'JPM']
+Allocations:[2.22044605e-16 0.00000000e+00 1.38777878e-16 1.00000000e+00]
+Sharpe Ratio: 0.423107179241801
+Volatility (stdev of daily returns): 0.06891106884929614
+Average Daily Return: 0.0018367037394021741
+Cumulative Return: -0.1148090815273477
